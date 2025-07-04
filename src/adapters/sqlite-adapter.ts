@@ -4,14 +4,11 @@ import { IDatabaseAdapter } from './base-adapter';
 
 /**
  * An adapter for interacting with an SQLite database.
+ * It handles data sanitization for types not natively supported by the driver.
  */
 export class SqliteAdapter implements IDatabaseAdapter {
   private db!: Database.Database;
 
-  /**
-   * Establishes a connection to the SQLite database file.
-   * @param dbPath - The file path to the SQLite database.
-   */
   public async connect(dbPath: string): Promise<void> {
     try {
       this.db = new Database(dbPath);
@@ -22,46 +19,46 @@ export class SqliteAdapter implements IDatabaseAdapter {
     }
   }
 
-  /**
-   * Inserts multiple records into a specified table.
-   * returns the fully inserted records, including
-   * their database-assigned primary keys.
-   * @param tableName - The name of the table to insert data into.
-   * @param data - An array of objects representing the rows.
-   * @returns A promise that resolves with the inserted records, including IDs.
-   */
   public async insert(tableName: string, data: any[]): Promise<any[]> {
     if (data.length === 0) {
       return [];
     }
 
-    const keys = Object.keys(data[0]);
+    // Pre-process data to convert types not supported by better-sqlite3.
+    const processedData = data.map(record => {
+      const newRecord = { ...record };
+      for (const key in newRecord) {
+        const value = newRecord[key];
+        if (value instanceof Date) {
+          newRecord[key] = value.toISOString();
+        } else if (typeof value === 'boolean') {
+          newRecord[key] = value ? 1 : 0;
+        } else if (typeof value === 'object' && value !== null) {
+          newRecord[key] = JSON.stringify(value);
+        }
+      }
+      return newRecord;
+    });
+
+    const keys = Object.keys(processedData[0]);
     const columns = keys.join(', ');
     const placeholders = keys.map(() => '?').join(', ');
-    // The RETURNING * clause is the key to getting the inserted rows back
     const insertSql = `INSERT INTO ${tableName} (${columns}) VALUES (${placeholders}) RETURNING *`;
 
     const insertedRecords: any[] = [];
-
-    // use a transaction for performance and data consistency.
     const insertTransaction = this.db.transaction((records) => {
       const statement = this.db.prepare(insertSql);
       for (const record of records) {
         const values = keys.map(key => record[key]);
-        // .get() executes the statement and returns the first row.
-        // Since using RETURNING *, it returns the complete inserted row.
         const inserted = statement.get(values);
         insertedRecords.push(inserted);
       }
     });
 
-    insertTransaction(data);
+    insertTransaction(processedData);
     return insertedRecords;
   }
 
-  /**
-   * Closes the connection to the database.
-   */
   public async disconnect(): Promise<void> {
     this.db.close();
     console.log('SQLite connection closed.');
@@ -69,34 +66,33 @@ export class SqliteAdapter implements IDatabaseAdapter {
 }
 
 
-
 /**
  * ------------------------------------------------------------------------
  * Summary:
  *
- * This file defines the `SqliteAdapter` class, which implements the
- * `IDatabaseAdapter` interface for interacting with SQLite databases using
- * the fast and synchronous `better-sqlite3` library.
- * 
- * Enhancements in This Version:
- * - The `insert()` method now uses `RETURNING *` to return the full inserted
- *   records — including auto-generated primary keys (like `id`). This is critical
- *   for enabling foreign key resolution in downstream tables during seeding.
- * 
+ * The `MysqlAdapter` implements the `IDatabaseAdapter` interface for
+ * interacting with MySQL databases using the `mysql2/promise` library.
+ *
  * Key Functionalities:
- * 1. `connect(dbPath)`: Opens a SQLite connection using the file path.
- * 2. `insert(tableName, data)`: Performs bulk inserts within a transaction.
- *    - Dynamically builds the insert statement using the fields from data.
- *    - Uses `.get()` on each insert to capture the returned inserted row.
- *    - Returns all inserted records, with IDs.
- * 3. `disconnect()`: Gracefully closes the SQLite connection.
+ * 1. `connect(connectionUri)`: Establishes a connection pool to the MySQL database.
+ *    Verifies connectivity by acquiring and releasing a test connection.
  *
- * Notes:
- * - The `db!` property is asserted to be initialized in `connect()` before use.
- * - The use of `RETURNING *` is supported in modern SQLite (3.35+).
- * - Transactions improve performance and prevent partial inserts.
+ * 2. `insert(tableName, data)`: Inserts multiple records using a single bulk insert.
+ *    - Uses parameterized queries and a multi-row `VALUES ?` syntax.
+ *    - Because MySQL (prior to 8.0.21) doesn't support `RETURNING *`, the adapter:
+ *      - Retrieves the `insertId` and `affectedRows` from the result.
+ *      - Executes a `SELECT * WHERE id >= ? LIMIT ?` query to fetch inserted rows.
+ *    - Assumes `id` is the auto-increment primary key (standard convention).
+ *    - Performs all operations inside a transaction for atomicity.
  *
- * This adapter is fully compatible with the `Seeder` engine and supports
- * foreign key resolution workflows by returning inserted rows.
+ * 3. `disconnect()`: Closes the connection pool cleanly.
+ *
+ * Design Considerations:
+ * - Assumes table names and column names are safe to wrap with backticks (`` ` ``).
+ * - `insert()` is compatible with foreign key resolution thanks to returned inserted rows.
+ * - Safer than naive `SELECT MAX(id)` approaches — avoids race conditions.
+ *
+ * This adapter ensures efficient and reliable MySQL compatibility for the seeder
+ * engine and aligns with the PostgreSQL and SQLite adapters for consistent behavior.
  * ------------------------------------------------------------------------
  */

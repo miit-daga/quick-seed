@@ -47,7 +47,7 @@ export function getExecutionOrder(schema: Schema): string[] {
       dependencies[dependentTable] = dependencies[dependentTable].filter(
         dep => dep !== currentTable
       );
-      // If the dependent table now has no other dependencies, add it to the queue
+      // If the dependent table has no other dependencies, add it to the queue
       if (dependencies[dependentTable].length === 0) {
         queue.push(dependentTable);
       }

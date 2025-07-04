@@ -13,9 +13,11 @@ function getFakerMethod(path: string) {
 
 /**
  * Generates an array of data records for a single table based on its schema.
+ * It returns raw data types (like Date objects) and relies on the
+ * specific database adapter to handle formatting.
  * @param tableSchema - The schema definition for the table.
  * @param resolver - The relationship resolver instance to get foreign keys from.
- * @returns An array of generated records.
+ * @returns An array of generated records with raw data types.
  */
 export function generateDataForTable(
   tableSchema: TableSchema,
@@ -41,14 +43,7 @@ export function generateDataForTable(
         value = randomParent[referencedField];
       }
 
-      // Sanitize the generated value to be database-driver-friendly.
-      if (value instanceof Date) {
-        record[fieldName] = value.toISOString();
-      } else if (typeof value === 'boolean') {
-        record[fieldName] = value ? 1 : 0;
-      } else {
-        record[fieldName] = value;
-      }
+      record[fieldName] = value;
     }
     data.push(record);
   }
@@ -59,29 +54,34 @@ export function generateDataForTable(
  * ------------------------------------------------------------------------
  * Summary:
  *
- * This module is responsible for generating fake/mock data for a single table
- * based on the provided `TableSchema`. It supports:
- * 
- * 1. Faker-based field generation via dot-path strings (e.g., `'person.email'`)
- * 2. Custom generator functions that receive both the `faker` instance and 
- *    the full `dbState` for complex logic
- * 3. Foreign key resolution via references (e.g., `{ references: 'users.id' }`)
- *    by pulling random existing records from the `RelationshipResolver`
+ * This module handles the dynamic generation of mock data for a single table
+ * based on its schema definition. It supports faker paths, custom generators,
+ * and foreign key resolution using a relationship resolver.
  *
- * Key Features:
- * - Uses `getFakerMethod()` to dynamically access nested faker methods.
- * - Delegates foreign key value resolution to the `RelationshipResolver`,
- *   enabling valid `userId`, `postId`, etc. assignments.
- * - Normalizes special types like `Date` and `boolean` for compatibility
- *   with common SQL engines.
+ * Key Functionalities:
  *
- * Example Use Cases:
- * - `email: 'internet.email'` generates a fake email
- * - `userId: { references: 'users.id' }` links to a seeded user record
- * - `title: (faker) => faker.lorem.words(3)` uses a custom generator
+ * 1. `getFakerMethod(path: string)`:
+ *    - Dynamically navigates the `faker` object based on a string path like
+ *      `'internet.email'`, resolving to `faker.internet.email`.
+ *    - Enables flexible and declarative faker usage in schema definitions.
  *
- * This function is a critical part of the Seeder engine, ensuring that all
- * generated records are realistic, relationally consistent, and compatible
- * with the target database.
+ * 2. `generateDataForTable(tableSchema, resolver)`:
+ *    - Iterates `count` times to create an array of records.
+ *    - Supports three types of field definitions:
+ *      a. **String** — Resolved as a faker method using `getFakerMethod`.
+ *      b. **Function** — A `CustomGenerator` that receives the faker instance
+ *         and full database state to generate more complex or dependent values.
+ *      c. **Reference Object** — Resolves a foreign key value by selecting a
+ *         random record from the referenced table (using the `resolver`).
+ *    - Produces raw JavaScript values (e.g., `Date`, `boolean`) which are later
+ *      formatted or converted appropriately by database adapters.
+ *
+ * Design Notes:
+ * - All foreign key handling is delegated to `RelationshipResolver`.
+ * - This function is fully decoupled from the database implementation.
+ * - Designed to work in tandem with `Seeder` and any `IDatabaseAdapter`.
+ *
+ * This logic powers the core of the data generation engine and ensures
+ * consistency, flexibility, and relational integrity when generating seed data.
  * ------------------------------------------------------------------------
  */
