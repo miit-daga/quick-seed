@@ -1,0 +1,42 @@
+// examples/prisma-stress-test/prisma/schema.postgres.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model Organization {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  projects Project[]
+}
+
+model User {
+  id        Int    @id @default(autoincrement())
+  email     String @unique
+  full_name String
+  tasks     Task[]
+}
+
+model Project {
+  id              Int          @id @default(autoincrement())
+  name            String
+  organization    Organization @relation(fields: [organization_id], references: [id])
+  organization_id Int
+  tasks           Task[]
+}
+
+model Task {
+  id             Int      @id @default(autoincrement())
+  title          String
+  project        Project  @relation(fields: [project_id], references: [id])
+  project_id     Int
+  assignee       User?    @relation(fields: [assignee_id], references: [id])
+  assignee_id    Int? // Nullable foreign key
+  parent_task    Task?    @relation("TaskToTask", fields: [parent_task_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent_task_id Int? // Nullable, self-referencing foreign key
+  sub_tasks      Task[]   @relation("TaskToTask")
+  metadata       Json?    // Nullable JSON field
+}

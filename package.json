@@ -8,7 +8,12 @@
     "start": "ts-node src/index.ts",
     "test:postgres": "ts-node scripts/test-postgres.ts",
     "test:mysql": "ts-node scripts/test-mysql.ts",
-    "stress-test": "ts-node scripts/stress-test.ts",
+    "prisma:test:sqlite": "dotenv -e examples/prisma-stress-test/prisma/.env.sqlite -- npx prisma db push --schema=examples/prisma-stress-test/prisma/schema.sqlite.prisma --force-reset --accept-data-loss && dotenv -e examples/prisma-stress-test/prisma/.env.sqlite -- npx ts-node examples/prisma-stress-test/seed.ts",
+    "prisma:test:postgres": "dotenv -e examples/prisma-stress-test/prisma/.env.postgres -- npx prisma db push --schema=examples/prisma-stress-test/prisma/schema.postgres.prisma --force-reset --accept-data-loss && dotenv -e examples/prisma-stress-test/prisma/.env.postgres -- npx ts-node examples/prisma-stress-test/seed.ts",
+    "prisma:test:mysql": "dotenv -e examples/prisma-stress-test/prisma/.env.mysql -- npx prisma db push --schema=examples/prisma-stress-test/prisma/schema.mysql.prisma --force-reset --accept-data-loss && dotenv -e examples/prisma-stress-test/prisma/.env.mysql -- npx ts-node examples/prisma-stress-test/seed.ts",
+    "drizzle:test:sqlite": "dotenv -e examples/drizzle-stress-test/.env.sqlite -- sqlite3 examples/drizzle-stress-test/stress.db < examples/drizzle-stress-test/migrations/sqlite.sql && dotenv -e examples/drizzle-stress-test/.env.sqlite -- npx ts-node examples/drizzle-stress-test/seed.ts",
+    "drizzle:test:postgres": "dotenv -e examples/drizzle-stress-test/.env.postgres -- bash -c 'psql \"$DATABASE_URL\" -f examples/drizzle-stress-test/migrations/postgres.sql' && dotenv -e examples/drizzle-stress-test/.env.postgres -- npx ts-node examples/drizzle-stress-test/seed.ts",
+    "drizzle:test:mysql": "dotenv -e examples/drizzle-stress-test/.env.mysql -- bash -c 'docker exec -i quickseed-mariadb mariadb -u$DB_USER -p$DB_PASSWORD $DB_NAME < examples/drizzle-stress-test/migrations/mysql.sql' && dotenv -e examples/drizzle-stress-test/.env.mysql -- npx ts-node examples/drizzle-stress-test/seed.ts",
     "build": "tsc",
     "test": "jest"
   },
@@ -19,6 +24,7 @@
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
     "better-sqlite3": "^12.2.0",
+    "drizzle-orm": "^0.44.2",
     "mysql2": "^3.14.1",
     "pg": "^8.16.3"
   },
@@ -27,7 +33,9 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.10",
     "@types/pg": "^8.15.4",
+    "dotenv-cli": "^8.0.0",
     "jest": "^29.7.0",
+    "prisma": "^6.11.1",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

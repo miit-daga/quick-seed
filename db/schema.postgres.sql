@@ -1,7 +1,7 @@
 -- db/schema.postgres.sql
 
-DROP TABLE IF EXISTS posts;
-DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS posts CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,

@@ -26,6 +26,8 @@ export interface TableSchema {
   count: number;
   /** A map of field names to their generation definitions. */
   fields: Record<string, FieldDefinition>;
+  /** Adapter-specific options (e.g., for primary key strategy). */
+  options?: any;
 }
 
 /**
