@@ -42,6 +42,13 @@ export class MysqlAdapter implements IDatabaseAdapter {
       return [];
     }
 
+    // Check if the generated data has no columns
+    if (Object.keys(data[0]).length === 0) {
+      throw new Error(
+        `Cannot insert into table "${tableName}". The generated data has no columns. Please check the 'fields' configuration for this table in your schema file.`
+      );
+    }
+
     const connection = await this.pool.getConnection();
     await connection.beginTransaction();
 

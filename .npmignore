@@ -26,6 +26,7 @@ quick-seed.config.js
 commitlog.txt
 full_changes.txt
 quick-seed.zip
+test.md
 
 # Git
 .git/
