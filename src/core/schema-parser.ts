@@ -3,7 +3,7 @@ import { Schema } from '../types/schema';
 
 /**
  * Analyzes the schema and determines the correct order for table seeding.
- * This is a simple topological sort based on 'references' dependencies.
+ * Uses topological sort to handle foreign key dependencies.
  * @param schema - The complete database schema.
  * @returns An array of table names in the order they should be seeded.
  * @throws An error if a circular dependency is detected.
@@ -25,7 +25,7 @@ export function getExecutionOrder(schema: Schema): string[] {
       const definition = schema[table].fields[fieldName];
       if (typeof definition === 'object' && 'references' in definition) {
         const referencedTable = definition.references.split('.')[0];
-        if (schema[referencedTable]) {
+        if (schema[referencedTable] && referencedTable !== table) {
           dependencies[table].push(referencedTable);
           dependents[referencedTable].push(table);
         }
@@ -62,30 +62,3 @@ export function getExecutionOrder(schema: Schema): string[] {
 
   return executionOrder;
 }
-
-
-
-
-
-/**
- * ----------------------------------------------------------
- * Summary:
- * This module determines the correct execution order for seeding
- * database tables, based on their inter-table dependencies.
- *
- * - It performs a topological sort using a dependency graph:
- *     • `dependencies[table]`: Tables this table depends on (via 'references')
- *     • `dependents[table]`: Tables that depend on this one
- *
- * - The algorithm:
- *     1. Initializes dependency and dependent maps.
- *     2. Parses the schema to detect references and build the graph.
- *     3. Starts with tables that have no dependencies (roots).
- *     4. Iteratively adds tables to the execution order once their dependencies are resolved.
- *     5. Throws an error if a circular dependency is detected.
- *
- * - Final Output:
- *     Returns an array of table names in the correct order for seeding,
- *     ensuring that referenced tables are seeded before the ones that depend on them.
- * ----------------------------------------------------------
- */

@@ -7,13 +7,29 @@ import { IDatabaseAdapter } from '../adapters/base-adapter';
 import { RelationshipResolver } from './relationship-resolver';
 
 /**
+ * Progress callback function type for tracking seeding progress.
+ */
+export type ProgressCallback = (event: {
+  phase: 'starting' | 'table_start' | 'generating' | 'inserting' | 'table_complete' | 'complete';
+  table?: string;
+  tableIndex?: number;
+  totalTables?: number;
+  recordsGenerated?: number;
+  recordsInserted?: number;
+  totalRecords?: number;
+  startTime?: number;
+}) => void;
+
+/**
  * The main Seeder class that orchestrates the entire database seeding process.
  */
 export class Seeder {
   private readonly adapter: IDatabaseAdapter;
+  private readonly progressCallback?: ProgressCallback;
 
-  constructor(config: SeederConfig) {
+  constructor(config: SeederConfig & { progressCallback?: ProgressCallback }) {
     this.adapter = config.adapter;
+    this.progressCallback = config.progressCallback;
   }
 
   /**
@@ -22,6 +38,7 @@ export class Seeder {
   public async seed(schema: Schema, dbConnection: any): Promise<void> {
     // Create a new resolver instance for this seed operation.
     const resolver = new RelationshipResolver();
+    const startTime = Date.now();
 
     try {
       await this.adapter.connect(dbConnection);
@@ -30,23 +47,66 @@ export class Seeder {
       const executionOrder = getExecutionOrder(schema);
       console.log('Seeding order:', executionOrder.join(' -> '));
 
-      for (const tableName of executionOrder) {
+      // Calculate total records for progress tracking
+      const totalRecords = Object.values(schema).reduce((sum, table) => sum + table.count, 0);
+      
+      this.progressCallback?.({
+        phase: 'starting',
+        totalTables: executionOrder.length,
+        totalRecords,
+        startTime
+      });
+
+      for (let i = 0; i < executionOrder.length; i++) {
+        const tableName = executionOrder[i];
         console.log(`\nProcessing table: ${tableName}`);
+        
+        this.progressCallback?.({
+          phase: 'table_start',
+          table: tableName,
+          tableIndex: i,
+          totalTables: executionOrder.length
+        });
+
         const tableSchema = schema[tableName];
 
         // Pass the resolver to the data generator
         const dataToInsert = generateDataForTable(tableSchema, resolver);
         console.log(`Generated ${dataToInsert.length} records for ${tableName}.`);
 
+        this.progressCallback?.({
+          phase: 'generating',
+          table: tableName,
+          recordsGenerated: dataToInsert.length
+        });
+
         if (dataToInsert.length > 0) {
           const insertedRecords = await this.adapter.insert(tableName, dataToInsert);
           console.log(`Successfully inserted data into ${tableName}.`);
+
+          this.progressCallback?.({
+            phase: 'inserting',
+            table: tableName,
+            recordsInserted: insertedRecords.length
+          });
 
           // Feed the resolver with the newly inserted data
           resolver.addRecords(tableName, insertedRecords);
           console.log(`Resolver updated with ${insertedRecords.length} records from ${tableName}.`);
         }
+
+        this.progressCallback?.({
+          phase: 'table_complete',
+          table: tableName,
+          tableIndex: i + 1,
+          totalTables: executionOrder.length
+        });
       }
+
+      this.progressCallback?.({
+        phase: 'complete',
+        startTime
+      });
 
       console.log('\nSeeding process completed successfully.');
 
@@ -59,36 +119,3 @@ export class Seeder {
     }
   }
 }
-
-
-
-/**
- * ------------------------------------------------------------------------
- * Summary:
- *
- * This file defines the `Seeder` class, which acts as the central coordinator
- * for the entire database seeding process. It is fully database-agnostic and
- * works with any adapter that implements the `IDatabaseAdapter` interface.
- *
- * Key Responsibilities:
- * 1. Accepts a Seeder configuration object containing a database adapter.
- * 2. Connects to the database using `adapter.connect(dbConnection)`.
- * 3. Determines the correct order of table seeding using `getExecutionOrder()`,
- *    ensuring tables with foreign key references are processed after their dependencies.
- * 4. Uses `generateDataForTable(tableSchema, resolver)` to generate records:
- *    - Supports faker strings
- *    - Supports custom generator functions
- *    - Supports relational references via the `RelationshipResolver`
- * 5. Inserts the generated records into the database using `adapter.insert()`.
- * 6. Feeds the inserted records back into the `RelationshipResolver` so that
- *    subsequent tables can resolve foreign key values against actual data.
- * 7. Always disconnects from the database using `adapter.disconnect()`,
- *    whether the seeding succeeds or fails.
- *
- * Why This Matters:
- * - Enables complete and consistent development database bootstrapping.
- * - Supports relational data integrity by resolving references during generation.
- * - Ensures modularity and future extensibility across various database engines.
- *
- * ------------------------------------------------------------------------
- */

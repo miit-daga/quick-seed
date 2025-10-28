@@ -68,34 +68,3 @@ async function main() {
 
 // Execute the main function
 main().catch(console.error);
-
-
-
-/**
- * ------------------------------------------------------------------------
- * Summary:
- * 
- * This is the main entry point for running the development database seeder.
- * It sets up a clean SQLite database, defines a schema, and seeds it with
- * mock data using Faker.js through the Seeder framework.
- * 
- * Responsibilities:
- * 1. Deletes any existing SQLite DB file to ensure a clean slate.
- * 2. Reads the `schema.sql` file and executes the SQL to create tables.
- * 3. Defines the mock data schema (table names, record count, and field rules).
- * 4. Initializes the `Seeder` with a `SqliteAdapter` and invokes the seeding process.
- * 
- * Schema Design:
- * - `users`: Generates 5 users with fake full names, emails, and timestamps.
- * - `posts`: Generates 10 posts with placeholder user IDs (which reference users),
- *   and random sentences, paragraphs, and boolean values.
- * 
- * Note:
- * - The `userId` field in `posts` uses a `{ references: 'users.id' }` config,
- *   but this is currently a placeholder — actual foreign key resolution will
- *   be implemented in the next development phase.
- * 
- * This script can be run directly with `ts-node` or bundled and executed with Node,
- * and acts as a testing/demo harness for the entire seeding system.
- * ------------------------------------------------------------------------
- */

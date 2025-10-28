@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts (keep dist/ for npm package)
+# dist/ is included by default
+
+# Development files
+src/
+tsconfig.json
+jest.config.js
+*.tsbuildinfo
+
+# Examples and test files
+examples/
+scripts/
+test.db
+seed.db
+test-schema.json
+quick-seed.config.js
+*.db
+
+# Documentation and development
+commitlog.txt
+full_changes.txt
+quick-seed.zip
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log

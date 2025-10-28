@@ -1,0 +1,15 @@
+{
+  "organizations": {
+    "count": 2,
+    "fields": { 
+      "name": "company.name"
+    }
+  },
+  "users": {
+    "count": 5,
+    "fields": {
+      "email": "internet.email",
+      "fullName": "person.fullName"
+    }
+  }
+}

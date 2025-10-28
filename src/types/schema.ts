@@ -35,23 +35,3 @@ export interface TableSchema {
  * It's a map of table names to their respective schemas.
  */
 export type Schema = Record<string, TableSchema>;
-
-
-
-/**
- * ----------------------------------------------
- * Summary:
- * This file defines the types used for creating a flexible, type-safe
- * schema-based data seeding system for development databases.
- *
- * - `CustomGenerator<T>`: A function that generates a value using Faker and the current db state.
- * - `FieldDefinition`: Describes how to generate a field value. It can be:
- *     • A string (faker method path or primitive type),
- *     • A reference to another table,
- *     • A custom generator function.
- * - `TableSchema`: Describes a single table's structure — how many records to generate and how to generate each field.
- * - `Schema`: A map of all tables and their corresponding `TableSchema`s — the complete blueprint for seeding the entire database.
- *
- * This type structure allows easy extension, type safety, and support for complex relationships between tables.
- * ----------------------------------------------
- */

@@ -1,0 +1,208 @@
+{
+  "companies": {
+    "count": 5,
+    "fields": {
+      "name": "company.name",
+      "industry": "company.buzzPhrase",
+      "founded_year": "number.int({'min': 1900, 'max': 2024})",
+      "revenue": "number.float({'min': 1000000, 'max': 10000000000})"
+    }
+  },
+  "departments": {
+    "count": 20,
+    "fields": {
+      "name": "commerce.department",
+      "company_id": { "references": "companies.id" },
+      "budget": "number.float({'min': 50000, 'max': 5000000})",
+      "head_count": "number.int({'min': 5, 'max': 200})"
+    }
+  },
+  "employees": {
+    "count": 200,
+    "fields": {
+      "first_name": "person.firstName",
+      "last_name": "person.lastName",
+      "email": "internet.email",
+      "department_id": { "references": "departments.id" },
+      "salary": "number.float({'min': 30000, 'max': 250000})",
+      "hire_date": "date.past({'years': 10})",
+      "performance_rating": "number.float({'min': 1, 'max': 5, 'precision': 0.1})"
+    }
+  },
+  "projects": {
+    "count": 50,
+    "fields": {
+      "name": "commerce.productName",
+      "description": "lorem.paragraph",
+      "department_id": { "references": "departments.id" },
+      "project_manager_id": { "references": "employees.id" },
+      "budget": "number.float({'min': 10000, 'max': 2000000})",
+      "start_date": "date.recent({'days': 365})",
+      "end_date": "date.future({'days': 365})",
+      "status": ["planning", "active", "on-hold", "completed", "cancelled"]
+    }
+  },
+  "tasks": {
+    "count": 500,
+    "fields": {
+      "title": "lorem.sentence",
+      "description": "lorem.sentences",
+      "project_id": { "references": "projects.id" },
+      "assigned_to_id": { "references": "employees.id" },
+      "created_by_id": { "references": "employees.id" },
+      "priority": ["low", "medium", "high", "urgent"],
+      "status": ["todo", "in-progress", "review", "done"],
+      "estimated_hours": "number.float({'min': 1, 'max': 80})",
+      "actual_hours": "number.float({'min': 0.5, 'max': 120})"
+    }
+  },
+  "task_comments": {
+    "count": 1000,
+    "fields": {
+      "task_id": { "references": "tasks.id" },
+      "author_id": { "references": "employees.id" },
+      "content": "lorem.paragraph",
+      "created_at": "date.recent({'days': 90})",
+      "is_internal": "datatype.boolean"
+    }
+  },
+  "clients": {
+    "count": 30,
+    "fields": {
+      "name": "company.name",
+      "contact_email": "internet.email",
+      "contact_phone": "phone.number",
+      "industry": "company.buzzPhrase",
+      "company_size": ["startup", "small", "medium", "large", "enterprise"],
+      "account_manager_id": { "references": "employees.id" }
+    }
+  },
+  "contracts": {
+    "count": 75,
+    "fields": {
+      "client_id": { "references": "clients.id" },
+      "project_id": { "references": "projects.id" },
+      "contract_value": "number.float({'min': 5000, 'max': 5000000})",
+      "start_date": "date.recent({'days': 365})",
+      "end_date": "date.future({'days': 730})",
+      "status": ["draft", "active", "completed", "terminated"],
+      "terms": "lorem.paragraphs"
+    }
+  },
+  "invoices": {
+    "count": 150,
+    "fields": {
+      "contract_id": { "references": "contracts.id" },
+      "invoice_number": "number.int({'min': 1000, 'max': 9999})",
+      "amount": "number.float({'min': 1000, 'max': 100000})",
+      "due_date": "date.future({'days': 90})",
+      "paid_date": "date.recent({'days': 60})",
+      "status": ["sent", "overdue", "paid", "cancelled"]
+    }
+  },
+  "skills": {
+    "count": 25,
+    "fields": {
+      "name": "hacker.noun",
+      "category": ["technical", "soft", "domain", "language", "tool"],
+      "description": "lorem.sentence"
+    }
+  },
+  "employee_skills": {
+    "count": 400,
+    "fields": {
+      "employee_id": { "references": "employees.id" },
+      "skill_id": { "references": "skills.id" },
+      "proficiency_level": ["beginner", "intermediate", "advanced", "expert"],
+      "years_experience": "number.int({'min': 0, 'max': 20})",
+      "certified": "datatype.boolean"
+    }
+  },
+  "meetings": {
+    "count": 100,
+    "fields": {
+      "title": "lorem.sentence",
+      "description": "lorem.paragraph",
+      "organizer_id": { "references": "employees.id" },
+      "start_time": "date.future({'days': 30})",
+      "end_time": "date.future({'days': 30})",
+      "location": "address.streetAddress",
+      "meeting_type": ["internal", "client", "team", "all-hands"]
+    }
+  },
+  "meeting_attendees": {
+    "count": 500,
+    "fields": {
+      "meeting_id": { "references": "meetings.id" },
+      "employee_id": { "references": "employees.id" },
+      "rsvp_status": ["attending", "maybe", "declined"],
+      "notes": "lorem.sentence"
+    }
+  },
+  "time_entries": {
+    "count": 2000,
+    "fields": {
+      "employee_id": { "references": "employees.id" },
+      "task_id": { "references": "tasks.id" },
+      "hours": "number.float({'min': 0.25, 'max': 8})",
+      "date": "date.recent({'days': 30})",
+      "description": "lorem.sentence",
+      "billable": "datatype.boolean"
+    }
+  },
+  "equipment": {
+    "count": 100,
+    "fields": {
+      "name": "commerce.productName",
+      "type": ["laptop", "desktop", "monitor", "phone", "tablet", "printer", "server"],
+      "serial_number": "random.alphaNumeric",
+      "purchase_date": "date.past({'years': 5})",
+      "warranty_expiry": "date.future({'years': 3})",
+      "assigned_to_id": { "references": "employees.id" },
+      "department_id": { "references": "departments.id" }
+    }
+  },
+  "software_licenses": {
+    "count": 50,
+    "fields": {
+      "software_name": "hacker.noun",
+      "license_key": "random.alphaNumeric",
+      "purchase_date": "date.past({'years': 2})",
+      "expiry_date": "date.future({'years': 2})",
+      "assigned_to_id": { "references": "employees.id" },
+      "max_users": "number.int({'min': 1, 'max': 100})"
+    }
+  },
+  "training_programs": {
+    "count": 15,
+    "fields": {
+      "name": "lorem.words",
+      "description": "lorem.paragraph",
+      "instructor": "person.fullName",
+      "start_date": "date.future({'days': 60})",
+      "duration_hours": "number.int({'min': 4, 'max': 40})",
+      "cost": "number.float({'min': 0, 'max': 5000})"
+    }
+  },
+  "training_enrollments": {
+    "count": 120,
+    "fields": {
+      "employee_id": { "references": "employees.id" },
+      "training_program_id": { "references": "training_programs.id" },
+      "enrollment_date": "date.recent({'days': 90})",
+      "completion_date": "date.future({'days': 30})",
+      "status": ["enrolled", "in-progress", "completed", "dropped"],
+      "score": "number.int({'min': 0, 'max': 100})"
+    }
+  },
+  "performance_reviews": {
+    "count": 150,
+    "fields": {
+      "employee_id": { "references": "employees.id" },
+      "review_date": "date.recent({'days': 365})",
+      "overall_rating": "number.float({'min': 1, 'max': 5, 'precision': 0.1})",
+      "comments": "lorem.paragraphs",
+      "goals": "lorem.paragraph"
+    }
+  }
+}

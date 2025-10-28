@@ -2,49 +2,25 @@
 
 /**
  * Defines the standard interface for all database adapters.
- * This contract ensures that the Seeder can interact with any database
- * in a consistent way.
+ * Ensures consistent interaction with any database type.
  */
 export interface IDatabaseAdapter {
     /**
      * Establishes a connection to the database.
-     * @param connectionDetails - The necessary configuration to connect.
-     *   For SQLite, this might be a file path. For Postgres, a connection string.
+     * @param connectionDetails - Connection config (file path for SQLite, connection string for others)
      */
     connect(connectionDetails: any): Promise<void>;
-  
+
     /**
-     * Inserts multiple records into a specified table.
-     * @param tableName - The name of the table to insert data into.
-     * @param data - An array of objects, where each object represents a row.
-     * @returns A promise that resolves with the records that were inserted,
-     *   ideally including the database-generated primary keys.
+     * Inserts multiple records into a table.
+     * @param tableName - Target table name
+     * @param data - Array of record objects to insert
+     * @returns Promise resolving to inserted records (with generated IDs when possible)
      */
     insert(tableName: string, data: any[]): Promise<any[]>;
-  
+
     /**
-     * Closes the connection to the database.
+     * Closes the database connection.
      */
     disconnect(): Promise<void>;
   }
-
-
-  /**
- * ------------------------------------------------------------------------
- * Summary:
- * 
- * This interface (`IDatabaseAdapter`) defines the contract that all database
- * adapters must follow to be compatible with the Seeder system.
- * 
- * Any custom adapter (e.g., for SQLite, PostgreSQL, MongoDB, etc.) must
- * implement all three methods:
- *   - connect(): Establishes a connection using configuration details.
- *   - insert(): Inserts one or more records into a specified table.
- *   - disconnect(): Closes the connection cleanly.
- * 
- * By adhering to this interface, the `Seeder` class can remain completely
- * database-agnostic and reuse the same logic regardless of the underlying DB.
- * 
- * This makes the project modular, extensible, and easy to maintain.
- * ------------------------------------------------------------------------
- */

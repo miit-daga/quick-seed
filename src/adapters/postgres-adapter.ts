@@ -74,34 +74,3 @@ export class PostgresAdapter implements IDatabaseAdapter {
     }
   }
 }
-
-
-/**
- * ------------------------------------------------------------------------
- * Summary:
- *
- * This file defines the `PostgresAdapter`, an implementation of the
- * `IDatabaseAdapter` interface for PostgreSQL using the popular `pg` library.
- *
- * Key Features:
- * 1. `connect(connectionString)`: Initializes a connection pool to the
- *    PostgreSQL database using the provided connection string and verifies it.
- *
- * 2. `insert(tableName, data)`: Efficiently inserts multiple rows into a table:
- *    - Dynamically builds a single multi-row `INSERT` SQL statement with positional
- *      parameters (e.g., `$1`, `$2`, ...).
- *    - Uses `RETURNING *` to get back all inserted rows, including auto-generated IDs.
- *    - Runs within a single transaction using a pooled client.
- *
- * 3. `disconnect()`: Gracefully closes the database connection pool.
- *
- * Design Considerations:
- * - Fully supports foreign key resolution through returned inserted records.
- * - Escapes column and table names with double quotes (`"column"`) to avoid
- *   case sensitivity or reserved keyword issues.
- * - Uses parameterized queries to prevent SQL injection and handle bulk inserts efficiently.
- *
- * This adapter allows the seeder framework to interact seamlessly with
- * PostgreSQL databases in a performant, type-safe, and extensible manner.
- * ------------------------------------------------------------------------
- */

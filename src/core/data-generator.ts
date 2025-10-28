@@ -49,39 +49,3 @@ export function generateDataForTable(
   }
   return data;
 }
-
-/**
- * ------------------------------------------------------------------------
- * Summary:
- *
- * This module handles the dynamic generation of mock data for a single table
- * based on its schema definition. It supports faker paths, custom generators,
- * and foreign key resolution using a relationship resolver.
- *
- * Key Functionalities:
- *
- * 1. `getFakerMethod(path: string)`:
- *    - Dynamically navigates the `faker` object based on a string path like
- *      `'internet.email'`, resolving to `faker.internet.email`.
- *    - Enables flexible and declarative faker usage in schema definitions.
- *
- * 2. `generateDataForTable(tableSchema, resolver)`:
- *    - Iterates `count` times to create an array of records.
- *    - Supports three types of field definitions:
- *      a. **String** — Resolved as a faker method using `getFakerMethod`.
- *      b. **Function** — A `CustomGenerator` that receives the faker instance
- *         and full database state to generate more complex or dependent values.
- *      c. **Reference Object** — Resolves a foreign key value by selecting a
- *         random record from the referenced table (using the `resolver`).
- *    - Produces raw JavaScript values (e.g., `Date`, `boolean`) which are later
- *      formatted or converted appropriately by database adapters.
- *
- * Design Notes:
- * - All foreign key handling is delegated to `RelationshipResolver`.
- * - This function is fully decoupled from the database implementation.
- * - Designed to work in tandem with `Seeder` and any `IDatabaseAdapter`.
- *
- * This logic powers the core of the data generation engine and ensures
- * consistency, flexibility, and relational integrity when generating seed data.
- * ------------------------------------------------------------------------
- */

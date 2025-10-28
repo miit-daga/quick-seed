@@ -3,8 +3,8 @@ import Database from 'better-sqlite3';
 import { IDatabaseAdapter } from './base-adapter';
 
 /**
- * An adapter for interacting with an SQLite database.
- * It handles data sanitization for types not natively supported by the driver.
+ * An adapter for interacting with SQLite databases using better-sqlite3.
+ * Handles data type conversions and bulk inserts with transactions.
  */
 export class SqliteAdapter implements IDatabaseAdapter {
   private db!: Database.Database;
@@ -64,35 +64,3 @@ export class SqliteAdapter implements IDatabaseAdapter {
     console.log('SQLite connection closed.');
   }
 }
-
-
-/**
- * ------------------------------------------------------------------------
- * Summary:
- *
- * The `MysqlAdapter` implements the `IDatabaseAdapter` interface for
- * interacting with MySQL databases using the `mysql2/promise` library.
- *
- * Key Functionalities:
- * 1. `connect(connectionUri)`: Establishes a connection pool to the MySQL database.
- *    Verifies connectivity by acquiring and releasing a test connection.
- *
- * 2. `insert(tableName, data)`: Inserts multiple records using a single bulk insert.
- *    - Uses parameterized queries and a multi-row `VALUES ?` syntax.
- *    - Because MySQL (prior to 8.0.21) doesn't support `RETURNING *`, the adapter:
- *      - Retrieves the `insertId` and `affectedRows` from the result.
- *      - Executes a `SELECT * WHERE id >= ? LIMIT ?` query to fetch inserted rows.
- *    - Assumes `id` is the auto-increment primary key (standard convention).
- *    - Performs all operations inside a transaction for atomicity.
- *
- * 3. `disconnect()`: Closes the connection pool cleanly.
- *
- * Design Considerations:
- * - Assumes table names and column names are safe to wrap with backticks (`` ` ``).
- * - `insert()` is compatible with foreign key resolution thanks to returned inserted rows.
- * - Safer than naive `SELECT MAX(id)` approaches — avoids race conditions.
- *
- * This adapter ensures efficient and reliable MySQL compatibility for the seeder
- * engine and aligns with the PostgreSQL and SQLite adapters for consistent behavior.
- * ------------------------------------------------------------------------
- */

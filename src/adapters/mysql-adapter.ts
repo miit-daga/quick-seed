@@ -56,8 +56,7 @@ export class MysqlAdapter implements IDatabaseAdapter {
       const values = data.map(record => {
         return keys.map(key => {
           const value = record[key];
-          // Explicitly stringify objects for JSON columns before sending.
-          if (typeof value === 'object' && value !== null) {
+          if (typeof value === 'object' && value !== null && !(value instanceof Date)) {
             return JSON.stringify(value);
           }
           return value;
@@ -98,43 +97,3 @@ export class MysqlAdapter implements IDatabaseAdapter {
     }
   }
 }
-
-
-
-/**
- * ------------------------------------------------------------------------
- * Summary:
- *
- * The `MysqlAdapter` implements the `IDatabaseAdapter` interface to allow
- * seamless integration with MySQL databases using the `mysql2/promise` driver.
- * It handles connection pooling, efficient bulk inserts, and safe record retrieval.
- *
- * Key Functionalities:
- *
- * 1. `connect(connectionUri)`:
- *    - Establishes a connection pool to the MySQL server using the provided URI.
- *    - Verifies connectivity by acquiring and releasing a test connection.
- *
- * 2. `insert(tableName, data)`:
- *    - Accepts an array of record objects to be inserted.
- *    - Builds a single bulk-insert query using `VALUES ?`, optimizing performance.
- *    - Uses transactions to ensure atomicity and rollback safety.
- *    - Since MySQL (prior to v8.0.21) doesn't support `RETURNING *`, it manually
- *      retrieves the inserted rows based on the `insertId` and `affectedRows`.
- *    - Assumes the table uses an auto-incrementing `id` as the primary key.
- *    - Throws if the number of rows inserted doesn't match expectations.
- *
- * 3. `disconnect()`:
- *    - Closes all connections in the pool to gracefully shut down.
- *
- * Design Considerations:
- * - Uses backticks (`` ` ``) for all identifiers to avoid reserved word conflicts.
- * - Ensures compatibility with older versions of MySQL by avoiding unsupported
- *   features like `RETURNING *`.
- * - Guarantees accurate resolution of relationships by returning the full
- *   inserted records after insertion.
- *
- * This adapter makes MySQL a first-class citizen in the seeding framework and
- * follows a structure consistent with the SQLite and PostgreSQL adapters.
- * ------------------------------------------------------------------------
- */
