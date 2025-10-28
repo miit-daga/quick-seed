@@ -46,6 +46,14 @@ Thumbs.db
 coverage/
 .nyc_output/
 
-# Logs
+# Database and schema files
+db/
+
+# Development artifacts
+changes.txt
+complex-stress-test.json
+currentstatus.txt
+
+#Logs
 logs/
-*.log
+*.logs
