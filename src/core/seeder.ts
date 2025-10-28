@@ -71,7 +71,7 @@ export class Seeder {
         const tableSchema = schema[tableName];
 
         // Pass the resolver to the data generator
-        const dataToInsert = generateDataForTable(tableSchema, resolver);
+        const dataToInsert = generateDataForTable(tableName, tableSchema, resolver);
         console.log(`Generated ${dataToInsert.length} records for ${tableName}.`);
 
         this.progressCallback?.({

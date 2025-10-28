@@ -15,11 +15,13 @@ function getFakerMethod(path: string) {
  * Generates an array of data records for a single table based on its schema.
  * It returns raw data types (like Date objects) and relies on the
  * specific database adapter to handle formatting.
+ * @param tableName - The name of the table being generated.
  * @param tableSchema - The schema definition for the table.
  * @param resolver - The relationship resolver instance to get foreign keys from.
  * @returns An array of generated records with raw data types.
  */
 export function generateDataForTable(
+  tableName: string,
   tableSchema: TableSchema,
   resolver: RelationshipResolver
 ): any[] {
@@ -32,6 +34,14 @@ export function generateDataForTable(
 
       if (typeof definition === 'string') {
         const fakerMethod = getFakerMethod(definition);
+
+        // Validate that the faker method exists and is callable
+        if (typeof fakerMethod !== 'function') {
+          throw new Error(
+            `Invalid Faker.js method specified in schema for table "${tableName}" (you provided: "${definition}"). Please check for typos or refer to the Faker.js documentation.`
+          );
+        }
+
         value = fakerMethod();
       } else if (typeof definition === 'function') {
         // Allow custom functions to access the state of previously seeded data.
