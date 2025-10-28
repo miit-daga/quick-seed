@@ -86,7 +86,7 @@ module.exports = {
       if (adapter === 'prisma' && ormInfo.type === 'prisma') {
         configContent = `// quick-seed configuration file for Prisma
 const { PrismaClient } = require('@prisma/client');
-const { PrismaAdapter } = require('quick-seed/dist/adapters/prisma-adapter');
+const { PrismaAdapter } = require('quick-seed/adapters');
 
 const prisma = new PrismaClient();
 
@@ -97,7 +97,7 @@ module.exports = {
 `;
       } else if (adapter === 'drizzle' && ormInfo.type === 'drizzle') {
         configContent = `// quick-seed configuration file for Drizzle
-const { DrizzleAdapter } = require('quick-seed/dist/adapters/drizzle-adapter');
+const { DrizzleAdapter } = require('quick-seed/adapters');
 // Note: You might need to adjust this import path based on your project structure
 const { createDrizzleConnection } = require('./db/connections');
 
