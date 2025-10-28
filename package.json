@@ -1,6 +1,6 @@
 {
   "name": "@miit-daga/quick-seed",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A powerful, database-agnostic seeding tool for generating realistic development data with support for SQL databases, Prisma ORM, and Drizzle ORM",
   "main": "dist/src/index.js",
   "bin": {
