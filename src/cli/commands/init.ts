@@ -18,27 +18,16 @@ module.exports = {
     }
 
     try {
-      // Detect ORM setup
       const ormInfo = detectORM();
 
-      // Build database choices
+      // --- Build Choices ---
       const dbChoices = [];
-
       if (ormInfo.type === 'prisma') {
-        dbChoices.push({
-          name: '🟣 Prisma ORM (Auto-detected)',
-          value: 'prisma'
-        });
+        dbChoices.push({ name: '🟣 Prisma ORM (Auto-detected)', value: 'prisma' });
       }
-
       if (ormInfo.type === 'drizzle') {
-        dbChoices.push({
-          name: '🟠 Drizzle ORM (Auto-detected)',
-          value: 'drizzle'
-        });
+        dbChoices.push({ name: '🟠 Drizzle ORM (Auto-detected)', value: 'drizzle' });
       }
-
-      // Add manual options
       dbChoices.push(
         new inquirer.Separator(),
         { name: '🐘 PostgreSQL', value: 'postgres' },
@@ -46,54 +35,55 @@ module.exports = {
         { name: '📁 SQLite (file-based)', value: 'sqlite' }
       );
 
-      const answers = await inquirer.prompt([
+      // --- Ask First Question ---
+      const adapterAnswer = await inquirer.prompt([
         {
           type: 'list',
           name: 'adapter',
           message: 'Which database or ORM will you be using?',
           choices: dbChoices,
         },
+      ]);
+      
+      const adapter = adapterAnswer.adapter;
+
+      // --- Ask Second Question (based on the first answer) ---
+      const connectionAnswer = await inquirer.prompt([
         {
           type: 'input',
           name: 'connection',
-          message: (answers: any) => {
-            switch (answers.adapter) {
-              case 'prisma':
-                return 'Prisma setup detected! Press Enter to use your existing Prisma configuration:';
-              case 'drizzle':
-                return 'Drizzle setup detected! Press Enter to use your existing Drizzle configuration:';
-              case 'postgres':
-                return 'Enter PostgreSQL connection string (e.g., postgresql://user:pass@localhost:5432/db):';
-              case 'mysql':
-                return 'Enter MySQL connection string (e.g., mysql://user:pass@localhost:3306/db):';
-              case 'sqlite':
-                return 'Enter SQLite database file path (e.g., ./database.db):';
-              default:
-                return 'Enter connection string:';
+          message: () => {
+            switch (adapter) {
+              case 'prisma': return 'Prisma setup detected! Press Enter to use your existing Prisma configuration:';
+              case 'drizzle': return 'Drizzle setup detected! Press Enter to use your existing Drizzle configuration:';
+              case 'postgres': return 'Enter PostgreSQL connection string (e.g., postgresql://user:pass@localhost:5432/db):';
+              case 'mysql': return 'Enter MySQL connection string (e.g., mysql://user:pass@localhost:3306/db):';
+              case 'sqlite': return 'Enter SQLite database file path (e.g., ./database.db):';
+              default: return 'Enter connection string:';
             }
           },
-          default: (answers: any) => {
-            if (answers.adapter === 'prisma' || answers.adapter === 'drizzle') {
-              return 'auto'; // Special marker for auto-config
+          default: () => {
+            if (adapter === 'prisma' || adapter === 'drizzle') {
+              return 'auto';
             }
             return '';
           },
-          validate: (input: string, answers: any) => {
-            if ((answers.adapter === 'prisma' || answers.adapter === 'drizzle') && input === 'auto') {
-              return true; // Allow auto for ORMs
+          validate: (input: string) => {
+            if ((adapter === 'prisma' || adapter === 'drizzle') && input === 'auto') {
+              return true;
             }
-            if (!input.trim()) {
+            if (!input.trim() && adapter !== 'prisma' && adapter !== 'drizzle') {
               return 'Connection string cannot be empty.';
             }
             return true;
           },
         },
-      ] as any);
+      ]);
 
+      const connection = connectionAnswer.connection;
       let configContent: string;
 
-      if (answers.adapter === 'prisma' && ormInfo.type === 'prisma') {
-        // Generate Prisma config
+      if (adapter === 'prisma' && ormInfo.type === 'prisma') {
         configContent = `// quick-seed configuration file for Prisma
 const { PrismaClient } = require('@prisma/client');
 const { PrismaAdapter } = require('quick-seed/dist/adapters/prisma-adapter');
@@ -105,10 +95,10 @@ module.exports = {
   connection: prisma,
 };
 `;
-      } else if (answers.adapter === 'drizzle' && ormInfo.type === 'drizzle') {
-        // Generate Drizzle config
+      } else if (adapter === 'drizzle' && ormInfo.type === 'drizzle') {
         configContent = `// quick-seed configuration file for Drizzle
 const { DrizzleAdapter } = require('quick-seed/dist/adapters/drizzle-adapter');
+// Note: You might need to adjust this import path based on your project structure
 const { createDrizzleConnection } = require('./db/connections');
 
 // Choose database provider (you can set DB_PROVIDER env var or change this)
@@ -123,24 +113,23 @@ module.exports = {
 };
 `;
       } else {
-        // Generate regular SQL config
         configContent = `// quick-seed configuration file
 module.exports = {
-  adapter: '${answers.adapter}',
-  connection: '${answers.connection}',
+  adapter: '${adapter}',
+  connection: '${connection}',
 };
 `;
       }
 
       fs.writeFileSync(configPath, configContent);
-
-      if (answers.adapter === 'prisma' || answers.adapter === 'drizzle') {
-        console.log(`✅ Success! Configuration file created for ${answers.adapter.toUpperCase()} ORM at: ${configPath}`);
-        console.log('   Note: You may need to adjust import paths in the config file.');
-        console.log('   Then run: quick-seed seed --schema your-schema.json');
+      
+      if (adapter === 'prisma' || adapter === 'drizzle') {
+          console.log(`✅ Success! Configuration file created for ${adapter.toUpperCase()} ORM at: ${configPath}`);
+          console.log('   Note: You may need to adjust import paths in the config file.');
+          console.log('   Then run: quick-seed seed --schema your-schema.json');
       } else {
-        console.log(`✅ Success! Configuration file created at: ${configPath}`);
-        console.log('   You can now create schema files and run: quick-seed seed --schema your-schema.json');
+          console.log(`✅ Success! Configuration file created at: ${configPath}`);
+          console.log('   You can now create schema files and run: quick-seed seed --schema your-schema.json');
       }
 
     } catch (error) {
