@@ -31,7 +31,7 @@ Database seeding is **painfully manual** and **error-prone**:
 For most projects, we recommend installing Quick Seed as a local development dependency:
 
 ```bash
-npm install quick-seed --save-dev
+npm install @miit-daga/quick-seed --save-dev
 ```
 
 This allows you to run it via `npx quick-seed` and ensures version consistency across your team.
@@ -39,7 +39,7 @@ This allows you to run it via `npx quick-seed` and ensures version consistency a
 If you prefer to have the `quick-seed` command available globally across all your projects:
 
 ```bash
-npm install -g quick-seed
+npm install -g @miit-daga/quick-seed
 ```
 
 ## Quick Start
@@ -151,7 +151,7 @@ module.exports = {
 ### Prisma ORM (Auto-generated)
 ```javascript
 const { PrismaClient } = require('@prisma/client');
-const { PrismaAdapter } = require('quick-seed/adapters');
+const { PrismaAdapter } = require('@miit-daga/quick-seed/adapters');
 
 const prisma = new PrismaClient();
 
@@ -163,7 +163,7 @@ module.exports = {
 
 ### Drizzle ORM (Auto-generated)
 ```javascript
-const { DrizzleAdapter } = require('quick-seed/adapters');
+const { DrizzleAdapter } = require('@miit-daga/quick-seed/adapters');
 
 module.exports = {
   adapter: new DrizzleAdapter(),
