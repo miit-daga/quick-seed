@@ -176,14 +176,61 @@ module.exports = {
 
 ## Faker.js Integration
 
-Quick Seed uses [Faker.js](https://fakerjs.dev/) for data generation. All Faker.js methods are available:
+Quick Seed uses [Faker.js](https://fakerjs.dev/) for data generation. Faker.js is included automatically - no additional installation required!
 
-- `person.fullName`, `person.firstName`, `person.lastName`
-- `internet.email`, `internet.username`, `internet.password`
-- `lorem.sentence`, `lorem.paragraph`, `lorem.words`
-- `date.recent`, `date.past`, `date.future`
-- `number.int`, `number.float`, `datatype.boolean`
-- And many more!
+### Common Faker Methods
+
+Here's a quick reference for the most commonly used Faker methods:
+
+| Field Type | Faker Method | Example Output |
+|------------|--------------|----------------|
+| **Person** |
+| Full name | `person.fullName` | "John Doe" |
+| First name | `person.firstName` | "John" |
+| Last name | `person.lastName` | "Doe" |
+| Job title | `person.jobTitle` | "Software Engineer" |
+| **Internet** |
+| Email | `internet.email` | "john.doe@example.com" |
+| Username | `internet.username` | "john_doe" |
+| URL | `internet.url` | "https://example.com" |
+| Password | `internet.password` | "aB3$dEf7" |
+| **Text** |
+| Sentence | `lorem.sentence` | "Lorem ipsum dolor sit amet." |
+| Paragraph | `lorem.paragraph` | "Lorem ipsum dolor..." |
+| Words | `lorem.words` | "lorem ipsum dolor" |
+| **Numbers & Booleans** |
+| Integer | `number.int` | 42 |
+| Float | `number.float` | 3.14 |
+| Boolean | `datatype.boolean` | true |
+| **Dates** |
+| Recent | `date.recent` | 2025-10-15 |
+| Past | `date.past` | 2024-05-20 |
+| Future | `date.future` | 2026-03-12 |
+| **Commerce** |
+| Product | `commerce.productName` | "Ergonomic Keyboard" |
+| Price | `commerce.price` | "299.99" |
+| Department | `commerce.department` | "Electronics" |
+
+### Usage Example
+
+```javascript
+{
+  "users": {
+    "count": 10,
+    "fields": {
+      "firstName": "person.firstName",
+      "lastName": "person.lastName",
+      "email": "internet.email",
+      "age": "number.int",
+      "bio": "lorem.paragraph",
+      "isActive": "datatype.boolean",
+      "createdAt": "date.recent"
+    }
+  }
+}
+```
+
+**Need more methods?** Check the complete [Faker.js documentation](https://fakerjs.dev/api/) for hundreds of available methods across different categories!
 
 ## Advanced Usage
 
