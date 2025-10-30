@@ -36,7 +36,13 @@
     "orm",
     "development",
     "testing",
-    "data-generation"
+    "data-generation",
+    "database seeding",
+    "database seeder",
+    "mock data",
+    "data generation",
+    "seed script",
+    "dev tool"
   ],
   "author": "Miit Daga",
   "license": "MIT",
